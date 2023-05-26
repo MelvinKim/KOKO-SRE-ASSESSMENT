@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+    }
 
     stages {
         stage('Checkout') {
@@ -10,6 +13,11 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh 'python3 test_app.py'
+            }
+        }
+        stage('Build docker image') {
+            steps {
+                sh 'docker build -t melvinkimathi/koko-sre-assessment:v1 .'
             }
         }
     }
