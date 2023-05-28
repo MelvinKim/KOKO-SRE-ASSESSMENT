@@ -43,7 +43,7 @@ To spin up the Jenkins server, you can either:
 1. install all the required packages (jenkins, docker, python3, boto, boto3, ansible ....) on an new/existing instance
 2. Use the provided Dockerfile to create a custom Jenkins container with the required dependencies
 ```shell
-docker build -t custom-docker-jenkins -f Dockerfile.jenkis .
+docker build -t custom-docker-jenkins -f Dockerfile.jenkins .
 ```
 ```shell
 docker run -p 8080:8080 -p 50000:50000 -d -v /var/run/docker.sock:/var/run/docker.sock -v jenkins_home:/var/jenkins_home custom-docker-jenkins
