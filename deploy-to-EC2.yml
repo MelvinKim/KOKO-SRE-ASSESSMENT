@@ -3,6 +3,8 @@
   connection: local
   tasks:
     - name: Create security group
+      become: true
+      become_user: root
       ec2_group:
         name: koko-sre-assessment
         description: koko-sre-assessment
@@ -14,6 +16,8 @@
             to_port: 5000
             cidr_ip: 0.0.0.0/0
     - name: launch ec2 instance 
+      become: true
+      become_user: root
       ec2: 
         instance_type: t2.micro
         key_name: jenkins-server
