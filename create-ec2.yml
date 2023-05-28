@@ -62,6 +62,7 @@
             - proto: all
               cidr_ip: 0.0.0.0/0
        register: basic_firewall
+       become: false
      
      - name: Launch the new EC2 Instance
        local_action:  ec2 
