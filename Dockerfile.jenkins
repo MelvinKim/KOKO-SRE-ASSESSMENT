@@ -12,6 +12,14 @@ RUN add-apt-repository \
 
 RUN apt-get update && apt-get install -y docker.io python3-pip
 
-RUN pip3 install flask ansible boto boto3
+RUN pip3 install flask ansible boto boto3 awscli
+
+# Set the environment variables for AWS CLI
+ENV AWS_ACCESS_KEY_ID=<access-key>
+ENV AWS_SECRET_ACCESS_KEY=<secret-key>
+
+RUN aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && \
+    aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY && \
+    aws configure set default.region <desired-region>
 
 RUN usermod -aG docker jenkins
