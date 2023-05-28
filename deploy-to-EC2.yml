@@ -15,7 +15,7 @@
             from_port: 5000
             to_port: 5000
             cidr_ip: 0.0.0.0/0
-          # Docker port
+          # port for Docker API Access 
           - proto: tcp
             from_port: 2375
             to_port: 2375
