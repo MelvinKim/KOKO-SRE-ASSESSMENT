@@ -21,7 +21,12 @@
         name:
           - botocore
           - boto3
-          
+
+     - name: Configure AWS Credentials for boto librarry
+       set_fact:
+        aws_access_key_id: AKIAZWSUT6PQ3DFFMUVF
+        aws_secret_access_key: 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
+
      - name: Create a security group
        local_action: 
          module: ec2_group
