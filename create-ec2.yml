@@ -16,7 +16,12 @@
      security_group: ec2-security-group
    
    tasks:
-
+     - name: Install botocore and boto3 python packages
+       pip:
+        name:
+          - botocore
+          - boto3
+          
      - name: Create a security group
        local_action: 
          module: ec2_group
