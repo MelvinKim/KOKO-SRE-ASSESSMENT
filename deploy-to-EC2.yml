@@ -29,12 +29,14 @@
         wait: yes
         assign_public_ip: yes
     - name: Install aptitude
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
       become_user: root
       apt:
         name: aptitude
         state: latest
     - name: Install required system packages
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
       become_user: root
       apt:
@@ -48,43 +50,51 @@
           - python3-setuptools
         state: latest
     - name: Add Docker GPG apt Key
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
       become_user: root
       apt_key:
         url: 'https://download.docker.com/linux/ubuntu/gpg'
         state: present
     - name: Add Docker Repository
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
       become_user: root
       apt_repository:
         repo: deb https://download.docker.com/linux/ubuntu focal stable
         state: present
     - name: Install Docker
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       apt:
         name: docker.io
         state: present
     - name: Add user to the docker group
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       user:
         name: root
         groups: docker
         append: yes
     - name: Restart Docker service
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       service:
         name: docker
         state: restarted
     - name : Log in to Docker Hub 
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
       become_user: root
       docker_login :
         username : <dockerhub-username>
         password : <dockerhub-access-token>
     - name : Pull image from Docker Hub 
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
       become_user: root
       docker_image :
         name : melvinkimathi/koko-sre-assessment:v1.1.1
         source: pull
     - name : Start up a Docker container using the pulled image and expose port 5000 
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
       docker_container :
         name : koko-sre-assessment 
         image : melvinkimathi/koko-sre-assessment:v1.1.1 
