@@ -16,16 +16,20 @@
      security_group: ec2-security-group
    
    tasks:
+     - name: Set AWS credentials
+       set_fact:
+        aws_access_key: AKIAZWSUT6PQ3DFFMUVF
+        aws_secret_key: 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
+
      - name: Install botocore and boto3 python packages
        pip:
         name:
           - botocore
           - boto3
-
-     - name: Configure AWS Credentials for boto librarry
-       set_fact:
-        aws_access_key_id: AKIAZWSUT6PQ3DFFMUVF
-        aws_secret_access_key: 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
+        state: present
+       environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
 
      - name: Create a security group
        local_action: 
