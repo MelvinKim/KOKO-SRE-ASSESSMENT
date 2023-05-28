@@ -31,25 +31,11 @@ pipeline {
                 sh 'docker build -t melvinkimathi/koko-sre-assessment:v1.1.1 .'  
             }
         }
-        stage('Provision EC2 Instance') {
+        stage('Provision EC2 Instance and Deploy App') {
             steps {
-                script{
-                    dir("terraform") {
-                    echo "provisioning EC2 Instance ......"
-                    sh 'cd terraform/ ; terraform init'
-                    sh "cd terraform/ ; terraform plan -out tfplan"
-                    sh 'cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
-                    def plan = readFile 'terraform/tfplan.txt'
-                    input message: "Do you want to apply the plan?",
-                    parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-                    sh "cd terraform/ ; terraform apply -input=false tfplan"
-                    }
-                }
-            }
-        }
-        stage('Deploy app - using Docker') {
-            steps {
-                echo 'spin up a docker container'
+                //to suppress warnings when you execute playbook    
+                sh "pip install --upgrade requests==2.20.1"
+                ansiblePlaybook playbook: 'deploy-to-EC2.yml'
             }
         }
     }
