@@ -41,7 +41,6 @@
         rules_egress:
           - proto: all
             cidr_ip: 0.0.0.0/0
-
     - name: Launch the new t2 micro EC2 Instance
       become: True
       local_action: ec2
@@ -53,87 +52,64 @@
                     keypair={{ keypair }}
                     count={{count}}
       register: ec2
+    - name: Set the IP of the newly created EC2 instance
+      set_fact:
+        ec2_instance_ip: "{{ ec2.instances[0].public_ip }}"
+    - name: Add the IP to the known hosts file
+      local_action: command ssh-keyscan -H "{{ ec2_instance_ip }}" >> ~/.ssh/known_hosts
 
-    - name: Install aptitude
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      become: true
-      become_user: root
-      apt:
-        name: aptitude
-        state: latest
+- hosts: ec2_instance_ip
+  become: true
+  tasks: 
+  - name: Install aptitude
+    apt:
+      name: aptitude
+      state: latest
+  - name: Install required system packages
+    apt:
+      pkg:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - python3-pip
+        - virtualenv
+        - python3-setuptools
+      state: latest
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: 'https://download.docker.com/linux/ubuntu/gpg'
+      state: present
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu focal stable
+      state: present
+  - name: Install Docker
+    apt:
+      name: docker.io
+      state: present
+  - name: Add user to the docker group
+    user:
+      name: root
+      groups: docker
+      append: yes
+  - name: Restart Docker service
+    service:
+      name: docker
+      state: restarted
+  - name: Log in to Docker Hub 
+    docker_login:
+      username: <dockerhub-username>
+      password: <dockerhub-access-token>
+  - name: Pull image from Docker Hub 
+    docker_image:
+      name: melvinkimathi/koko-sre-assessment:v1.1.1
+      source: pull
+  - name: Start up a Docker container using the pulled image and expose port 5000 
+    docker_container:
+      name: koko-sre-assessment 
+      image: melvinkimathi/koko-sre-assessment:v1.1.1 
+      state: started 
+      ports:
+        - "5000:5000"
 
-    - name: Install required system packages
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      become: true
-      become_user: root
-      apt:
-        pkg:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-          - python3-pip
-          - virtualenv
-          - python3-setuptools
-        state: latest
-
-    - name: Add Docker GPG apt Key
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      become: true
-      become_user: root
-      apt_key:
-        url: 'https://download.docker.com/linux/ubuntu/gpg'
-        state: present
-
-    - name: Add Docker Repository
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      become: true
-      become_user: root
-      apt_repository:
-        repo: deb https://download.docker.com/linux/ubuntu focal stable
-        state: present
-
-    - name: Install Docker
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      apt:
-        name: docker.io
-        state: present
-
-    - name: Add user to the docker group
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      user:
-        name: root
-        groups: docker
-        append: yes
-
-    - name: Restart Docker service
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      service:
-        name: docker
-        state: restarted
-
-    - name : Log in to Docker Hub 
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      become: true
-      become_user: root
-      docker_login :
-        username : <dockerhub-username>
-        password : <dockerhub-access-token>
-
-    - name : Pull image from Docker Hub 
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      become: true
-      become_user: root
-      docker_image :
-        name : melvinkimathi/koko-sre-assessment:v1.1.1
-        source: pull
-
-    - name : Start up a Docker container using the pulled image and expose port 5000 
-      hosts: "{{ ec2_instance.instances[0].public_ip }}"
-      docker_container :
-        name : koko-sre-assessment 
-        image : melvinkimathi/koko-sre-assessment:v1.1.1 
-        state : started 
-        ports :
-          - "5000:5000"
-    
