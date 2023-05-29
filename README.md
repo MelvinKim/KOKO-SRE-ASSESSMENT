@@ -18,7 +18,7 @@ The app exposes a single endpoint "\home" , which returns a response when access
 3. Change directory into the project.
 4. Create a virtual environment
 ```shell
-python3.11 -m venv venv
+python3.10 -m venv venv
 ```
 6. Activate the Python virtual environment
 ```shell
@@ -95,6 +95,22 @@ To configure Jenkins to "listen" for changes on the specified git url:
 3. Select the “Content-type” to “application/json” format.
 4. Next, check one option under “Which events would you like to trigger this webhook?“. "Just the Push Event": It will only send data when someone push into the repository.
 5. click on the “Add Webhook” button to save Jenkins GitHub Webhook configurations.
+
+### Boto package configuration
+1. Change directory into the root folder
+```shell
+cd ~
+```
+2. Create a file in the root dir 
+```shell
+touch .boto
+```
+3. Add the following content in that file
+```shell
+[Credentials]
+aws_access_key_id=<AWS-ACCCESS-KEY-ID.
+aws_secret_access_key=<AWS-SECRET-ACCESS-KEY>
+```
 
 ### AWS Configuration
 1. Create an IAM user:
