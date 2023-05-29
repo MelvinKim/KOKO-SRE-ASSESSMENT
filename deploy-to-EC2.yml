@@ -1,38 +1,59 @@
 - hosts: localhost
-  become: true
   connection: local
+  gather_facts: False
+  tags: provisioning
+
+  vars:
+      instance_type: t2.micro
+      security_group: koko-sre-assessment
+      image: ami-0080e4c5bc078760e
+      region: us-east-1
+      keypair: jenkins-server
+      count: 1
+
+
   tasks:
-    - name: Create security group
-      become: true
-      become_user: root
-      ec2_group:
-        name: koko-sre-assessment
-        description: koko-sre-assessment
-        region: us-east-1
-        # define an inbound rule to expose port 5000
+    - name: Create New security group with below given name
+      local_action:
+        module: ec2_group
+        name: "{{ security_group }}"
+        description: Security Group for Newly Created EC2 Instance
+        region: "{{ region }}"
         rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          # define an inbound rule to expose port 5000
           - proto: tcp
             from_port: 5000
             to_port: 5000
             cidr_ip: 0.0.0.0/0
-          # port for Docker API Access 
+           # port for Docker API Access 
           - proto: tcp
             from_port: 2375
             to_port: 2375
             cidr_ip: 0.0.0.0/0
-    - name: launch ec2 instance 
-      become: true
-      become_user: root
-      ec2: 
-        instance_type: t2.micro
-        key_name: jenkins-server
-        image: ami-053b0d53c279acc90
-        region: us-east-1
-        group: default
-        count: 1
-        vpc_subnet_id: subnet-0565633e9a42bd845
-        wait: yes
-        assign_public_ip: yes
+        rules_egress:
+          - proto: all
+            cidr_ip: 0.0.0.0/0
+
+    - name: Launch the new t2 micro EC2 Instance
+      become: True
+      local_action: ec2
+                    group={{ security_group }}
+                    instance_type={{ instance_type}}
+                    image={{ image }}
+                    wait=true
+                    region={{ region }}
+                    keypair={{ keypair }}
+                    count={{count}}
+      register: ec2
+
     - name: Install aptitude
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
@@ -40,6 +61,7 @@
       apt:
         name: aptitude
         state: latest
+
     - name: Install required system packages
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
@@ -54,6 +76,7 @@
           - virtualenv
           - python3-setuptools
         state: latest
+
     - name: Add Docker GPG apt Key
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
@@ -61,6 +84,7 @@
       apt_key:
         url: 'https://download.docker.com/linux/ubuntu/gpg'
         state: present
+
     - name: Add Docker Repository
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
@@ -68,22 +92,26 @@
       apt_repository:
         repo: deb https://download.docker.com/linux/ubuntu focal stable
         state: present
+
     - name: Install Docker
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       apt:
         name: docker.io
         state: present
+
     - name: Add user to the docker group
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       user:
         name: root
         groups: docker
         append: yes
+
     - name: Restart Docker service
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       service:
         name: docker
         state: restarted
+
     - name : Log in to Docker Hub 
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
@@ -91,6 +119,7 @@
       docker_login :
         username : <dockerhub-username>
         password : <dockerhub-access-token>
+
     - name : Pull image from Docker Hub 
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       become: true
@@ -98,6 +127,7 @@
       docker_image :
         name : melvinkimathi/koko-sre-assessment:v1.1.1
         source: pull
+
     - name : Start up a Docker container using the pulled image and expose port 5000 
       hosts: "{{ ec2_instance.instances[0].public_ip }}"
       docker_container :
