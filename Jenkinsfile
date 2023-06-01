@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Build docker image') {
             steps {
-                sh 'docker build -t melvinkimathi/koko-sre-assessment:v1.1.1 .'
+                sh 'docker build --platform=linux/amd64 -t melvinkimathi/koko-sre-assessment:v1.1.1 .'
             }
         }
         stage('Push docker image to docker image to docker hub') {

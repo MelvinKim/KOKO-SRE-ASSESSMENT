@@ -5,4 +5,4 @@ install_python_in_the_jenkins_container:
 		apt-get update && \
 			apt-get install -y python3
 build_docker_image:
-	docker build -t melvinkimathi/koko-sre-assessment:v1.1.1 .
+	docker build --platform=linux/amd64 -t melvinkimathi/koko-sre-assessment:v1.1.1 .
