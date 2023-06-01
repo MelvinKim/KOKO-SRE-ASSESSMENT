@@ -56,10 +56,7 @@
         name:  "{{ ec2_instance.instances[0].network_interfaces[0].association.public_ip }}"
         groups: myhosts
     - name: Wait for SSH port become open on the new EC2 instance
-      wait_for:
-        host: myhosts
-        port: 22
-        delay: 10
+      ansible.builtin.wait_for:
         timeout: 320
 
 - hosts: myhosts

@@ -8,7 +8,7 @@ The app exposes a single endpoint "\home" , which returns a response when access
 1. Flask, Python
 2. Docker
 3. Docker hub
-4. Ansible (ansible=2.9.23)
+4. Ansible
 5. AWS
 6. boto, boto3
 
@@ -43,10 +43,83 @@ To spin up the Jenkins server, you can either:
 1. install all the required packages (jenkins, docker, python3, boto, boto3, ansible ....) on an new/existing instance
 2. Use the provided Dockerfile to create a custom Jenkins container with the required dependencies
 ```shell
-docker build -t custom-docker-jenkins -f Dockerfile.jenkins .
+docker build --platform=linux/amd64 -t custom-docker-jenkins -f Dockerfile.jenkins .
 ```
 ```shell
 docker run -p 8080:8080 -p 50000:50000 -d -v /var/run/docker.sock:/var/run/docker.sock -v jenkins_home:/var/jenkins_home custom-docker-jenkins
+```
+
+### Prerequisites for running ansible on the Jenkins server
+1. Install ansible
+```shell
+sudo apt-add-repository ppa:ansible/ansible
+```
+```shell
+sudo apt update
+```
+```shell
+sudo apt install ansible
+```
+2. Permissions file
+- Create a permissions file, that will allow ansible to communicate with remote hosts
+```shell
+vim pem_file.pem
+```
+- Add the contents of your key file in the file and save
+```shell
+cat {key_file_contents} > pem_file.pem
+```
+- Change "permissions file" permissions ...
+```shell
+chmod 400 pem_file.pem
+```
+2. Ansible configuration
+- in the root, folder run the following command: 
+```shell
+vim ansible.cfg
+```
+- configure the following
+```shell
+ansible_user = <your-ansible-user>
+ansible_private_key_file_path = <path-to-your-private-key-file>
+host_strict_key_checking = False
+```
+3. Install required modules
+- AWS module
+```shell
+ansible-galaxy collection install amazon.aws
+```
+- Docker module
+```shell
+ansible-galaxy collection install community.docker
+```
+
+### AWS Configuration
+1. Create an IAM user:
+    1. Go to the AWS Management Console and navigate to the IAM service.
+    2. Create a new IAM user or use an existing one.
+    3. Assign the necessary IAM policies to the user to grant permissions for EC2 instance creation. For example, the user should have the "AmazonEC2FullAccess" policy attached.
+2. Generate access keys for the IAM user:
+    1. In the IAM user's "Security Credentials" tab, create or retrieve the access keys.
+    2. Take note of the generated Access Key ID and Secret Access Key.
+3. Configure AWS CLI on Jenkins server:
+    1. Install AWS CLI on your Jenkins server if it's not already installed.
+    2. Run the aws configure command on the Jenkins server and provide the Access Key ID, Secret Access Key, default region, and output format.
+
+### Boto package configuration
+1. Change directory into the root folder
+```shell
+cd ~
+```
+2. Create a file in the root dir 
+```shell
+touch .boto
+```
+3. Add the following content in that file
+```shell
+[Credentials]
+aws_access_key_id=<AWS-ACCCESS-KEY-ID.
+aws_secret_access_key=<AWS-SECRET-ACCESS-KEY>
 ```
 
 ### Configuring Jenkins server
@@ -95,34 +168,6 @@ To configure Jenkins to "listen" for changes on the specified git url:
 3. Select the “Content-type” to “application/json” format.
 4. Next, check one option under “Which events would you like to trigger this webhook?“. "Just the Push Event": It will only send data when someone push into the repository.
 5. click on the “Add Webhook” button to save Jenkins GitHub Webhook configurations.
-
-### Boto package configuration
-1. Change directory into the root folder
-```shell
-cd ~
-```
-2. Create a file in the root dir 
-```shell
-touch .boto
-```
-3. Add the following content in that file
-```shell
-[Credentials]
-aws_access_key_id=<AWS-ACCCESS-KEY-ID.
-aws_secret_access_key=<AWS-SECRET-ACCESS-KEY>
-```
-
-### AWS Configuration
-1. Create an IAM user:
-    1. Go to the AWS Management Console and navigate to the IAM service.
-    2. Create a new IAM user or use an existing one.
-    3. Assign the necessary IAM policies to the user to grant permissions for EC2 instance creation. For example, the user should have the "AmazonEC2FullAccess" policy attached.
-2. Generate access keys for the IAM user:
-    1. In the IAM user's "Security Credentials" tab, create or retrieve the access keys.
-    2. Take note of the generated Access Key ID and Secret Access Key.
-3. Configure AWS CLI on Jenkins server:
-    1. Install AWS CLI on your Jenkins server if it's not already installed.
-    2. Run the aws configure command on the Jenkins server and provide the Access Key ID, Secret Access Key, default region, and output format.
 
 ### Deployment
 - Once the pipeline runs sucessfully, navigate to newly created instance
