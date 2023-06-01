@@ -36,7 +36,7 @@ pipeline {
                 //to suppress warnings when you execute playbook    
                 // sh "pip install --upgrade requests==2.20.1"
                 sh "ansible-playbook --syntax-check deploy-to-EC2.yml"
-               ansiblePlaybook playbook: 'deploy-to-EC2.yml'
+                sh "ansible-playbook deploy-to-EC2.yml" 
             }
         }
     }
