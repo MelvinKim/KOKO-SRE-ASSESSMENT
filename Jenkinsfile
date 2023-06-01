@@ -4,7 +4,7 @@ pipeline {
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
     } 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        DOCKERHUB_CREDENTIALS = credentials('f3f94151-2740-4a88-a0c8-3076c49ad1c4')
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
@@ -34,15 +34,10 @@ pipeline {
         stage('Provision EC2 Instance and Deploy App') {
             steps {
                 //to suppress warnings when you execute playbook    
-                sh "pip install --upgrade requests==2.20.1"
-                ansiblePlaybook playbook: 'deploy-to-EC2.yml'
+                // sh "pip install --upgrade requests==2.20.1"
+                sh "ansible-playbook --syntax-check deploy-to-EC2.yml"
+                sh "ansible-playbook deploy-to-EC2.yml"
             }
         }
     }
-
-    post {
-		always {
-			sh 'docker logout'
-		}
-	}
 }

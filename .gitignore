@@ -2,3 +2,4 @@ __pycache__/
 .DS_Store
 backup
 venv
+initial-deploy-to-EC2.yml
