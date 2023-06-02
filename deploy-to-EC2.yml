@@ -1,5 +1,5 @@
 - hosts: localhost
-  become: true
+  become: yes
 
   tasks:
     - name: Create a security group
@@ -55,9 +55,14 @@
       add_host:
         name:  "{{ ec2_instance.instances[0].network_interfaces[0].association.public_ip }}"
         groups: myhosts
-
+    # - name: Wait for SSH port become open on the new EC2 instance, comment this for now because of modules issues
+    #   ansible.builtin.wait_for:
+    #     host: myhosts
+    #     port: 22
+    #     delay: 180
+    #   delegate_to: localhost
 - hosts: myhosts
-  become: true
+  become: yes
   tasks: 
   - name: Update package repositories
     apt:
