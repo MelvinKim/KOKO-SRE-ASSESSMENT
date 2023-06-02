@@ -108,6 +108,7 @@
     community.docker.docker_login:
       username: <docker-hub-username>
       password: <docker-hub-access-token>
+    # Use Ansible Vault or external variables to securely manage sensitive information
   - name: Pull image from Docker Hub 
     community.docker.docker_image:
       name: melvinkimathi/koko-sre-assessment:v1.1.1
