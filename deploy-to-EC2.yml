@@ -16,7 +16,8 @@
           - proto: tcp
             from_port: 22
             to_port: 22
-            cidr_ip: 0.0.0.0/0
+            # for production usecases, only limit the SSH port to be accessible to a specific number of IPs
+            cidr_ip: 0.0.0.0/0 
           # define an inbound rule to expose port 5000
           - proto: tcp
             from_port: 5000
