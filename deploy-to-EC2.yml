@@ -1,5 +1,7 @@
 - hosts: localhost
   become: yes
+  vars:
+    docker_image: "{{ docker_image }}" # values passed from Jenkins
 
   tasks:
     - name: Create a security group
@@ -111,12 +113,12 @@
     # Use Ansible Vault or external variables to securely manage sensitive information
   - name: Pull image from Docker Hub 
     community.docker.docker_image:
-      name: melvinkimathi/koko-sre-assessment:v1.1.1
+      name: "{{ docker_image }}"
       source: pull
   - name: Start up a Docker container using the pulled image and expose port 5000 
     community.docker.docker_container:
       name: koko-sre-assessment 
-      image: melvinkimathi/koko-sre-assessment:v1.1.1 
+      image: "{{ docker_image }}" 
       state: started 
       ports:
         - "5000:5000"
