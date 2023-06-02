@@ -1,7 +1,7 @@
 - hosts: localhost
   become: yes
   vars:
-    docker_image: "{{ docker_image }}" # values passed from Jenkins
+    docker_image: "{{ docker_image }}" # value passed from Jenkins
 
   tasks:
     - name: Create a security group
