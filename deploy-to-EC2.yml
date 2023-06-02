@@ -2,6 +2,10 @@
   become: yes
   vars:
     docker_image: "{{ docker_image }}" # value passed from Jenkins
+  
+  # pass sensitive information using ansible-valut
+  vars_files:
+    - secrets.yml
 
   tasks:
     - name: Create a security group
