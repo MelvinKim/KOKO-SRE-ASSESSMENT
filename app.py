@@ -9,7 +9,7 @@ app.config['TIMEOUT'] = 30
 @app.route('/home')
 def home():
     """
-    This was to basically display the request timeout functionality.
+    This was to basically demonstrate the request timeout functionality.
     However for production usecases, i would consider the following:
     1. Implementing distributed tracing to track all the requests served by the servers.
     2. Implementing logging on the servers to have better visibility on what is happening.
