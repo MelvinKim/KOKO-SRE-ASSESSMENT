@@ -254,7 +254,7 @@
     become: yes
   - name: Pull kubernetes container images
     ansible.builtin.command: kubeadm config images pull
-  - name: Configure Docker cgroup driver - Create /etc/docker/daemon.json file
+  - name: Configure Docker cgroup driver - Create /etc/docker/daemon.json file - copy daemon.json file for changing cgroup driver to systemd
     copy:
         content: '{"exec-opts": ["native.cgroupdriver=systemd"]}'
         dest: /etc/docker/daemon.json
