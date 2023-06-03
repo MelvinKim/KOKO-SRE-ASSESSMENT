@@ -1,0 +1,135 @@
+- hosts: localhost
+  become: yes
+  vars:
+    docker_image: "melvinkimathi/koko-sre-assessment:2.1.0"
+  
+  tasks:
+    - name: Create a security group
+      amazon.aws.ec2_security_group:
+        name: koko-sre-assessment
+        description: KOKO SRE assessment security group.
+        region: us-east-1
+        vpc_id: vpc-04e0a7049e32e9957
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            # for production usecases, only limit the SSH port to be accessible to a specific number of IPs
+            cidr_ip: 0.0.0.0/0 
+          # define an inbound rule to expose port 5000
+          - proto: tcp
+            from_port: 5000
+            to_port: 5000
+            cidr_ip: 0.0.0.0/0
+           # port for Docker API Access 
+          - proto: tcp
+            from_port: 2375
+            to_port: 2375
+            cidr_ip: 0.0.0.0/0
+        rules_egress:
+          - proto: all
+            cidr_ip: 0.0.0.0/0
+      register: security_group
+    - name: Create EC2 Instance
+      amazon.aws.ec2_instance:
+        name: koko-sre-assessment
+        region: us-east-1
+        key_name: ansible--to-manage-remote-machines
+        instance_type: t2.micro
+        security_group: koko-sre-assessment
+        vpc_subnet_id: subnet-0565633e9a42bd845
+        state: running
+        network:
+          assign_public_ip: true
+          delete_on_termination: true
+        image_id: ami-053b0d53c279acc90
+      register: ec2_instance
+    - name: Print public ip address
+      debug:
+        var: ec2_instance.instances[0].network_interfaces[0].association.public_ip
+    - name: Ping the EC2 Instance
+      ping:
+        data: "{{ ec2_instance.instances[0].network_interfaces[0].association.public_ip }}"
+    - name: Add the new instance to the Ansible inventory
+      add_host:
+        name:  "{{ ec2_instance.instances[0].network_interfaces[0].association.public_ip }}"
+        groups: myhosts
+    # - name: Wait for SSH port become open on the new EC2 instance, comment this for now because of modules issues
+    #   ansible.builtin.wait_for:
+    #     host: myhosts
+    #     port: 22
+    #     delay: 180
+    #   delegate_to: localhost
+- hosts: myhosts
+  become: yes
+  tasks: 
+  - name: Update package repositories
+    apt:
+      update_cache: yes
+  - name: Install aptitude
+    apt:
+      name: aptitude
+      state: latest
+  - name: Install required system packages
+    apt:
+      pkg:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - python3-pip
+        - virtualenv
+        - python3-setuptools
+      state: latest
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: 'https://download.docker.com/linux/ubuntu/gpg'
+      state: present
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu focal stable
+      state: present
+  - name: Install Docker
+    apt:
+      name: docker.io
+      state: present
+  - name: Add user to the docker group
+    user:
+      name: ubuntu # initially --> the name: root
+      groups: docker
+      append: yes
+  - name: Restart Docker service
+    service:
+      name: docker
+      state: restarted
+  - name: Add Kubernetes apt-key
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      state: present
+  - name: Add Kubernetes repository
+    apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      state: present
+  - name: Install Kubernetes components
+    apt:
+      update_cache: yes
+      name:
+        - kubelet
+        - kubeadm
+        - kubectl
+      state: present
+  - name: Enable Kubernetes service
+    systemd:
+      name: kubelet.service
+      enabled: true
+      state: started
+  - name: Download Helm installation script
+    get_url:
+      url: https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+      dest: /tmp/get-helm-3
+  - name: Run Helm installation script
+    command: bash /tmp/get-helm-3
