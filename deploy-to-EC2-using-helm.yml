@@ -252,7 +252,7 @@
       value: '1'
       sysctl_set: yes
     become: yes
-  - name: Pull kubernetes container images
+  - name: Pulling images required for setting up a k8s cluster
     ansible.builtin.command: kubeadm config images pull
   - name: Configure Docker cgroup driver - Create /etc/docker/daemon.json file - copy daemon.json file for changing cgroup driver to systemd
     copy:
