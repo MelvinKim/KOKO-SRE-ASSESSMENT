@@ -293,22 +293,12 @@
   - name: Display the join command
     debug:
       var: join_command
-  - name: Setup kubeconfig on master node - Create .kube directory
-    file:
-      path: /root/.kube
-      state: directory
-  - name: Setup kubeconfig on master node - Copy admin.conf to kubeconfig
-    copy:
-      src: /etc/kubernetes/admin.conf
-      dest: /root/.kube/config"
-      remote_src: yes
-      mode: '0644'
-  - name: Setup kubeconfig on master node - Set ownership for kubeconfig
-    file:
-      path: /root/.kube/config"
-      owner: root
-      group: root
-      mode: '0644'
+  - name: Setting up kubectl on Master Node
+    shell:
+    cmd: |
+      mkdir -p $HOME/.kube
+      sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+      sudo chown $(id -u):$(id -g) $HOME/.kube/config
   - name: Stop kubelet service
     service:
       name: kubelet
