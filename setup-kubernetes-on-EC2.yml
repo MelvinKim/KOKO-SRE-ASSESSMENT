@@ -268,8 +268,11 @@
   - name: Print private ip address for the master node
     debug:
       var: "{{ master_node_private_ip }}"
+  - name: Execute kubeadm reset
+    command: 
+      cmd: kubeadm reset --force
   - name: Initialize Kubernetes master node
-    shell: kubeadm init --apiserver-advertise-address="{{ hostvars['localhost'].master_node_private_ip }}" --pod-network-cidr=10.244.0.0/16
+    shell: kubeadm init --apiserver-advertise-address="{{hostvars['localhost'].master_node_private_ip}}" --pod-network-cidr=10.244.0.0/16
     register: kubeadm_output
   - name: Display kubeadm output
     debug:
@@ -283,26 +286,31 @@
       var: join_command
   - name: Setup kubeconfig on master node - Create .kube directory
     file:
-      path: "{{ ansible_env.HOME }}/.kube"
+      path: /root/.kube
       state: directory
   - name: Setup kubeconfig on master node - Copy admin.conf to kubeconfig
     copy:
       src: /etc/kubernetes/admin.conf
-      dest: "{{ ansible_env.HOME }}/.kube/config"
+      dest: /root/.kube/config"
       remote_src: yes
       mode: '0644'
   - name: Setup kubeconfig on master node - Set ownership for kubeconfig
     file:
-      path: "{{ ansible_env.HOME }}/.kube/config"
-      owner: "{{ ansible_user_id }}"
-      group: "{{ ansible_user_id }}"
+      path: /root/.kube/config"
+      owner: root
+      group: root
       mode: '0644'
-  - name: Restart kubelet before setting up Flannel
-    systemd:
-        name: kubelet
-        state: restarted
-  - name: Run kubectl version with strace before setting up Flannel
-    shell: strace -eopenat kubectl version
+  - name: Stop kubelet service
+    service:
+      name: kubelet
+      state: stopped
+  - name: Start kubelet service
+    service:
+      name: kubelet
+      state: started
+  - name: Run strace on kubectl version command
+    command:
+      cmd: strace -eopenat kubectl version
   - name: Activate Flannel pod networking
     shell: kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
     args:
@@ -409,3 +417,12 @@
       state: restarted
   - name: Join the worker node to the cluster
     command: sudo join_command
+  - name: Download Helm installation script
+    get_url:
+      url: https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+      dest: /tmp/get-helm-3
+  - name: Run Helm installation script
+    command: bash /tmp/get-helm-3
+  - name: Deploy the app using helm
+    command:
+        cmd: helm install greetings deploy/charts/greetings
