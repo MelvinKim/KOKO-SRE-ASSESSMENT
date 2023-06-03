@@ -277,8 +277,8 @@
   - name: Display kubeadm output
     debug:
       var: kubeadm_output.stdout_lines
-  # Set join command variable to be use by worker nodes to join the cluster
-  - name: Set join command variable to be use by worker nodes to join the cluster
+  # Set join command variable to be used by worker nodes to join the cluster
+  - name: Set join command variable to be used by worker nodes to join the cluster
     set_fact:
       join_command: "{{ kubeadm_output.stdout_lines[-2:] }}"
   - name: Display the join command
