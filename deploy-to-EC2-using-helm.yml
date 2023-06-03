@@ -166,7 +166,16 @@
       add_host:
         name:  "{{ kubernetes_worker_node.instances[0].network_interfaces[0].association.public_ip }}"
         groups: worker
-
+    - name: Wait for SSH port to become open on the new Master Node instance
+      ansible.builtin.wait_for:
+        host: master
+        port: 22
+        state: started
+    - name: Wait for SSH port to become open on new Worker Node Instance
+      ansible.builtin.wait_for:
+        host: worker
+        port: 22
+        state: started
 
 - hosts: master
   become: yes
