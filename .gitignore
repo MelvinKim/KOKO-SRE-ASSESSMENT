@@ -3,4 +3,5 @@ __pycache__/
 backup
 venv
 initial-deploy-to-EC2.yml
+helm-deploy.yml
 vault-password.txt
