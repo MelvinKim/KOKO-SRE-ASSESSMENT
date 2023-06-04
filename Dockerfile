@@ -19,7 +19,7 @@ COPY --from=build /venv /venv
 
 # sets an environment variable named PATH inside the container 
 # and adds /venv/bin to the beginning of the PATH variable, 
-#  allowing the container to find and use executables installed in the virtual environment.
+# allowing the container to find and use executables installed in the virtual environment.
 ENV PATH="/venv/bin:$PATH"
 
 CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
