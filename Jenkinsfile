@@ -37,7 +37,7 @@ pipeline {
                 // first version: deployment using Docker
                 sh "ansible-playbook deploy-to-EC2-using-docker.yml --extra-vars 'docker_image=${env.DOCKER_IMAGE}'"
                 // second version: deployment using helm
-                sh "ansible-playbook deploy-to-EC2-using-helm.yml"
+                sh "ansible-playbook deploy-to-EC2-using-helm.yml --extra-vars 'docker_image=${env.DOCKER_IMAGE}'"
             }
         }
     }

@@ -1,5 +1,7 @@
 - hosts: localhost
   become: yes
+  vars:
+    docker_image: "{{ docker_image }}" # value passed from Jenkins
 
   tasks:
     - name: Create a security group for the Kubernetes Master Node
@@ -424,4 +426,4 @@
     command: bash /tmp/get-helm-3
   - name: Deploy the app using helm
     command:
-        cmd: helm install greetings deploy/charts/greetings
+        cmd: helm install greetings deploy/charts/greetings --set app.container.image="{{docker_image}}"
