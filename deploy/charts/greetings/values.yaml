@@ -1,4 +1,14 @@
 app:
+  team: koko-sre
   replicaCount: 2
   container:
-    image: melvinkimathi/koko-sre-assessment:2.1.0
+    image: melvinkimathi/koko-sre-assessment:v1.1.1
+    imagePullPolicy: Always
+    containerPort: 5000
+    resources:
+      memoryLimit: "256Mi"
+      cpuLimit: "500m"
+  service:
+    port: 80
+    protocol: TCP
+    type: NodePort

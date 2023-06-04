@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}
-    team: koko-sre
+    team:  {{ .Values.app.team }}
 spec:
   replicas: {{ .Values.app.replicaCount }}
   selector:
@@ -15,9 +15,15 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}
-        team: koko-sre
+        team: {{ .Values.app.team }}
     spec:
       containers:
         - name: {{ .Release.Name }}
           image: {{ .Values.app.container.image }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.app.container.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.app.container.containerPort }}
+          resources:
+            limits:
+              memory: {{ .Values.app.container.resources.memoryLimit }}
+              cpu: {{ .Values.app.container.resources.cpuLimit }}

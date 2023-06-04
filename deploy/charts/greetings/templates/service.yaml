@@ -10,7 +10,7 @@ spec:
     selector:
         app: {{ .Release.Name }}
     ports:
-        - port: 5000
-          targetPort: 5000
-          protocol: TCP
-    type: NodePort
+        - port: {{ .Values.app.service.port }}
+          targetPort: {{ .Values.app.container.containerPort }}
+          protocol: {{ .Values.app.service.protocol }}
+    type: {{ .Values.app.service.type }}
